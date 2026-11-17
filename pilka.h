@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include "paletka.h"
+#include "stone.h"
 
 
 class Pilka {
@@ -59,6 +60,43 @@ public:
             vy = -std::abs(vy);
             y = gora - radius;
             shape.setPosition({x, y});
+            return true;
+        }
+        return false;
+    }
+    bool collideStone(Stone& s) {
+        if (s.isDestroyed()) {
+            return false;
+        }
+
+        float lewo = s.getPosition().x;
+        float prawo = s.getPosition().x + s.getSize().x;
+        float gora = s.getPosition().y;
+        float dol = s.getPosition().y + s.getSize().y;
+
+        if (x + radius >= lewo && x - radius <= prawo &&
+            y + radius >= gora && y - radius <= dol) {
+
+            float overlapLeft = (x + radius) - lewo;
+            float overlapRight = prawo - (x - radius);
+            float overlapTop = (y + radius) - gora;
+            float overlapBottom = dol - (y - radius);
+
+            float minOverlapX = std::min(overlapLeft, overlapRight);
+            float minOverlapY = std::min(overlapTop, overlapBottom);
+
+            if (minOverlapX < minOverlapY) {
+                bounceX();
+                if (overlapLeft < overlapRight) x = lewo - radius;
+                else x = prawo + radius;
+            } else {
+                bounceY();
+                if (overlapTop < overlapBottom) y = gora - radius;
+                else y = dol + radius;
+            }
+
+            shape.setPosition({x, y});
+            s.trafienie();
             return true;
         }
         return false;
